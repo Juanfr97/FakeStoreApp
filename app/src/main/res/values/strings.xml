@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">StoreApp</string>
+    <string name="product_name">Playera</string>
+    <string name="product_category">categoria</string>
+    <string name="product_price">$150.0</string>
+    <string name="product_rating">4.9</string>
+</resources>
