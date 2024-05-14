@@ -1,5 +1,6 @@
 package com.example.storeapp.presentation.ui
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -39,10 +40,23 @@ class MainActivity : AppCompatActivity() {
             .create(ProductService::class.java)
 
         lifecycleScope.launch {
-            val response = retrofitBuilder.getProducts()
-            Log.i("ProductResponse",response.toString())
-            productList = response
-            recyclerView.adapter = ProductsAdapter(productList)
+            try{
+                progressBar.visibility = ProgressBar.VISIBLE
+                val response = retrofitBuilder.getProducts()
+                Log.i("ProductResponse",response.toString())
+                productList = response
+                progressBar.visibility = ProgressBar.GONE
+                recyclerView.adapter = ProductsAdapter(productList){
+                    val intent = Intent(this@MainActivity,ProductDetailActivity::class.java)
+                    intent.putExtra("productId",it.id)
+                    startActivity(intent)
+                }
+            }
+            catch (e: Exception){
+                progressBar.visibility = ProgressBar.GONE
+                Log.e("ProductResponse",e.toString())
+            }
+
         }
     }
 
