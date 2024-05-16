@@ -1,5 +1,6 @@
 package com.example.storeapp.presentation.ui
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -42,7 +43,12 @@ class MainActivity : AppCompatActivity() {
             val response = retrofitBuilder.getProducts()
             Log.i("ProductResponse",response.toString())
             productList = response
-            recyclerView.adapter = ProductsAdapter(productList)
+            recyclerView.adapter = ProductsAdapter(productList){ product ->
+                val intent = Intent(this@MainActivity,ProductDetailActivity::class.java).apply{
+                    putExtra("productId",product.id)
+                }
+                startActivity(intent)
+            }
         }
     }
 
