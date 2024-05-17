@@ -5,14 +5,21 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.storeapp.R
 import com.example.storeapp.data.ProductService
+import com.example.storeapp.presentation.viewmodels.ProductDetailViewModel
 import com.squareup.picasso.Picasso
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
+@AndroidEntryPoint
 class ProductDetailActivity : AppCompatActivity() {
     private lateinit var productName : TextView
     private lateinit var productImage : ImageView
@@ -23,15 +30,46 @@ class ProductDetailActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_product_detail)
+        val productDetailViewModel : ProductDetailViewModel by viewModels()
         productName = findViewById(R.id.productName)
         productImage = findViewById(R.id.productImage)
         productDescription = findViewById(R.id.productDescription)
         productPrice = findViewById(R.id.productPrice)
         productRating = findViewById(R.id.productRating)
         productCategory = findViewById(R.id.productCategory)
-        val productId = intent.getIntExtra("productId",0)
-        Log.i("ProductIntent",productId.toString())
-        getProduct(productId)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                productDetailViewModel.productState.collect{state->
+                    if(state.isLoading){
+                        productName.visibility = TextView.GONE
+                        productImage.visibility = ImageView.GONE
+                        productDescription.visibility = TextView.GONE
+                        productPrice.visibility = TextView.GONE
+                        productRating.visibility = TextView.GONE
+                        productCategory.visibility = TextView.GONE
+                    }
+                    else{
+                        productName.visibility = TextView.VISIBLE
+                        productImage.visibility = ImageView.VISIBLE
+                        productDescription.visibility = TextView.VISIBLE
+                        productPrice.visibility = TextView.VISIBLE
+                        productRating.visibility = TextView.VISIBLE
+                        productCategory.visibility = TextView.VISIBLE
+                    }
+                    if(state.product != null){
+                        productName.text = state.product.title
+                        Picasso.get().load(state.product.image).into(productImage)
+                        productDescription.text = state.product.description
+                        productRating.text = state.product.rating.rate.toString()
+                        productPrice.text = state.product.computedPrice
+                        productCategory.text = state.product.category
+                    }
+                }
+            }
+        }
+//        val productId = intent.getIntExtra("productId",0)
+//        Log.i("ProductIntent",productId.toString())
+//        getProduct(productId)
     }
 
     private fun getProduct(id:Int){
